@@ -4,38 +4,52 @@ pipeline {
     tools {
         maven 'DefaultMaven'
     }
-    stages{
-        stage('Build'){
+
+    parameters {
+        string(
+            name: 'tomcat_staging',
+            defaultValue: 'tomcat:8080',
+            description: 'The staging server IP/hostname',
+        )
+        string(
+            name: 'tomcat_production',
+            defaultValue: 'tomcat-production:8080',
+            description: 'The production server IP/hostname'
+        )
+    }
+
+    triggers {
+        pollSCM('* * * * *')
+    }
+
+    stages {
+        stage ('Build') {
             steps {
                 sh 'mvn clean package'
             }
             post {
                 success {
-                    echo 'Now Archiving...'
+                    echo 'Archiving'
                     archiveArtifacts artifacts: '**/target/*.war'
                 }
             }
         }
-        stage('Deploy to staging') {
-            steps {
-                build job: 'deploy-to-staging'
-            }
-        }
-
-        stage('Deploy to production') {
-            steps {
-                timeout (time:5, unit: 'DAYS') {
-                    input message: 'Approve production deployment?'
-                }
-                build job: 'deploy-to-production'
-            }
-            post {
-                success {
-                    echo 'Code deployed to production'
+        stage ('Deployments') {
+            parallel {
+                stage('Deploy to staging') {
+                    steps {
+                        sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
+                            sh 'scp **/target/*.war ${tomcat_staging}:/var/lib/tomcat7/webapps/'
+                        }
+                    }
                 }
 
-                failure {
-                    echo 'Deployment failed'
+                stage('Deploy to production') {
+                    steps {
+                        sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
+                            sh 'scp **/target/*.war ${tomcat_production}:/var/lib/tomcat7/webapps/'
+                        }
+                    }
                 }
             }
         }
