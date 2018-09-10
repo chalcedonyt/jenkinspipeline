@@ -26,6 +26,7 @@ pipeline {
         stage ('Build') {
             steps {
                 sh 'mvn clean package'
+                sh 'docker build -t tomcatapp:${env.BUILD_ID} .'
             }
             post {
                 success {
@@ -34,24 +35,24 @@ pipeline {
                 }
             }
         }
-        stage ('Deployments') {
-            parallel {
-                stage('Deploy to staging') {
-                    steps {
-                        sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
-                            sh 'scp **/target/*.war ${tomcat_staging}:/var/lib/tomcat7/webapps/'
-                        }
-                    }
-                }
+        // stage ('Deployments') {
+        //     parallel {
+        //         stage('Deploy to staging') {
+        //             steps {
+        //                 sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
+        //                     sh 'scp **/target/*.war ${tomcat_staging}:/var/lib/tomcat7/webapps/'
+        //                 }
+        //             }
+        //         }
 
-                stage('Deploy to production') {
-                    steps {
-                        sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
-                            sh 'scp **/target/*.war ${tomcat_production}:/var/lib/tomcat7/webapps/'
-                        }
-                    }
-                }
-            }
-        }
+        //         stage('Deploy to production') {
+        //             steps {
+        //                 sshagent('e8a97da1-3841-4c2c-9bf0-969d17172fd6') {
+        //                     sh 'scp **/target/*.war ${tomcat_production}:/var/lib/tomcat7/webapps/'
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
     }
 }
