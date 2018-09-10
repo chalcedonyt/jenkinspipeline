@@ -3,6 +3,7 @@ pipeline {
 
     tools {
         maven 'DefaultMaven'
+        docker 'DefaultDocker'
     }
 
     parameters {
