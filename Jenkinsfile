@@ -2,9 +2,9 @@ pipeline {
     agent any
 
     tools {
-        maven: 'DefaultMaven'
+        maven 'DefaultMaven'
     }
-    stages{
+    stages{˝
         stage('Build'){
             steps {
                 sh 'mvn clean package'
