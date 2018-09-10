@@ -30,7 +30,7 @@ pipeline {
                     echo 'Code deployed to production'
                 }
 
-                failuer {
+                failure {
                     echo 'Deployment failed'
                 }
             }
